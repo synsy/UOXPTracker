@@ -17,13 +17,14 @@ from PyQt5.QtWidgets import (
     QTableWidget,
     QVBoxLayout,
     QWidget,
+    QPushButton,
 )
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Tracker")
+        self.setWindowTitle("XP Tracker")
         self.setMinimumSize(900, 650)
 
         # ---- Central container ----
@@ -64,6 +65,11 @@ class MainWindow(QMainWindow):
         controls_row.addLayout(right_controls, 1)
         root.addLayout(controls_row)
 
+        actions_row = QHBoxLayout()
+        actions_row.addStretch(1)
+        actions_row.addWidget(self.save_button)
+        root.addLayout(actions_row)
+
         # ---- Graphs row (2 panels) ----
         graphs_row = QHBoxLayout()
         graphs_row.setSpacing(18)
@@ -80,16 +86,17 @@ class MainWindow(QMainWindow):
         history_layout = QVBoxLayout(history_group)
         history_layout.setContentsMargins(14, 14, 14, 14)
 
-        self.history_table = QTableWidget(0, 4)
+        self.history_table = QTableWidget(0, 6)
         self.history_table.setHorizontalHeaderLabels(
-            ["Timestamp", "Aspect", "Aspect Level", "Aspect XP", "Chain Level"]
+            ["Timestamp", "Aspect", "Aspect Level", "Aspect XP", "Chain Level", "Chain XP"]
         )
         self.history_table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.history_table.setAlternatingRowColors(True)
         self.history_table.setSelectionBehavior(self.history_table.SelectRows)
         self.history_table.setEditTriggers(self.history_table.NoEditTriggers)
         self.history_table.verticalHeader().setVisible(False)
-        self.history_table.horizontalHeader().setStretchLastSection(True)
+        header = self.history_table.horizontalHeader()
+        header.setSectionResizeMode(header.Stretch)
 
         history_layout.addWidget(self.history_table, 1)
         root.addWidget(history_group, 1)
@@ -164,6 +171,9 @@ class MainWindow(QMainWindow):
         lbl2.setMinimumWidth(110)
 
         self.chain_xp_input.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+
+        self.save_button = QPushButton("Save")
+        self.save_button.setDefault(True)  # Enter key trigger
 
         layout.addWidget(lbl1, 0, 0)
         layout.addWidget(self.chain_combo, 0, 1)
@@ -265,6 +275,28 @@ class MainWindow(QMainWindow):
 
             QLineEdit::placeholder {
                 color: #7f8a98;
+            }
+            
+            QPushButton {
+                background: #2b6de8;
+                color: #ffffff;
+                border: none;
+                border-radius: 10px;
+                padding: 10px 16px;
+                font-weight: 600;
+            }
+            
+            QPushButton:hover {
+                background: #3a7af0;
+            }
+            
+            QPushButton:pressed {
+                background: #245cc4;
+            }
+            
+            QPushButton:disabled {
+                background: #2a2f3a;
+                color: #9aa6b2;
             }
 
             /* --- ComboBox dropdown list --- */
