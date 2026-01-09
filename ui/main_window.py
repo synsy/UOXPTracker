@@ -76,13 +76,13 @@ class MainWindow(QMainWindow):
         root.addLayout(graphs_row, 1)
 
         # ---- History panel (bottom, full width) ----
-        history_group = QGroupBox("JSON Data History")
+        history_group = QGroupBox("XP History")
         history_layout = QVBoxLayout(history_group)
         history_layout.setContentsMargins(14, 14, 14, 14)
 
         self.history_table = QTableWidget(0, 4)
         self.history_table.setHorizontalHeaderLabels(
-            ["Timestamp", "Aspect", "Aspect XP", "Chain Level"]
+            ["Timestamp", "Aspect", "Aspect Level", "Aspect XP", "Chain Level"]
         )
         self.history_table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.history_table.setAlternatingRowColors(True)
