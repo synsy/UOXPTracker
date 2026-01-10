@@ -1,17 +1,42 @@
-from PyQt5.QtWidgets import QMessageBox
-
+from PyQt5.QtWidgets import QMessageBox, QTableWidgetItem
+from datetime import datetime
+from services.storage_service import StorageService, StorageConfig
+from pathlib import Path
+import json
 
 class MainController:
     """
     Globals
     """
-    aspect_xp = 0
-    chain_xp = 0
+    ASPECT_XP_BY_LEVEL = {
+        0: 500, 1: 1000, 2: 1500, 3: 2000, 4: 2500, 5: 3000, 6: 3500, 7: 4000,
+        8: 4500, 9: 5000, 10: 15000, 11: 25000, 12: 40000, 13: 120000, 14: 250000
+    }
+
+    CHAIN_XP_BY_LEVEL = {
+        1: 250000, 2: 500000, 3: 750000, 4: 1000000, 5: 1250000, 6: 1500000,
+        7: 1750000, 8: 2000000, 9: 2250000, 10: 2500000, 11: 2750000, 12: 3000000,
+        13: 3250000, 14: 3500000, 15: 3750000, 16: 4000000, 17: 4250000,
+        18: 4500000, 19: 4750000, 20: 5000000, 21: 5250000, 22: 5500000,
+        23: 5750000, 24: 6000000, 25: 6250000, 26: 6500000, 27: 6750000,
+        28: 7000000, 29: 7250000, 30: 7500000
+    }
 
     def __init__(self, window):
         self.window = window
+
+        # instance state (if you actually need these)
+        self.aspect_xp = 0
+        self.chain_xp = 0
+
+        # storage must exist before refresh_* uses it
+        config = StorageConfig(data_dir=Path("data"))
+        self.storage = StorageService(config)
+
         self.populate_dropdowns()
         self.connect_signals()
+        self.validate_all()
+
         self.refresh_history()
         self.refresh_graphs()
 
@@ -46,69 +71,68 @@ class MainController:
         self.window.chain_xp_input.editingFinished.connect(self.on_chain_xp_edited)
 
         # Save button:
-        # self.window.save_button.clicked.connect(self.on_save_clicked)
+        self.window.save_button.clicked.connect(self.on_save_clicked)
 
     #region Event Handlers
     # ---------------------------
-    # Event handlers (stubs)
+    # Event handlers
     # ---------------------------
 
     def on_aspect_changed(self):
         """
         Called when the Aspect Select dropdown changes.
         """
+        self.validate_all()
         # Example idea: enable/disable inputs or update graphs
         # selected = self.window.aspect_combo.currentText()
-        pass
 
     def on_aspect_level_changed(self):
         """
         Called when the Aspect Level dropdown changes.
         """
-        pass
+        self.validate_all()
 
     def on_chain_level_changed(self):
         """
         Called when the Chain Level dropdown changes.
         """
-        pass
+        self.validate_all()
 
     def on_aspect_xp_edited(self):
         """
         Called when the Aspect XP line edit loses focus / user presses Enter.
         Great place for lightweight validation feedback.
         """
-        #text = self.window.aspect_xp_input.text().strip()
-        #if text and not self.is_number(text):
-            #self.show_error("Aspect XP must be a number.")
-            # Keep UI feedback minimal—don’t do heavy logic here yet.
-        #else:
-            #aspect_xp = text
-        #pass
+        self.validate_all()
 
     def on_chain_xp_edited(self):
         """
         Called when the Chain XP line edit loses focus / user presses Enter.
         """
-        #text = self.window.chain_xp_input.text().strip()
-        #if text and not self._is_number(text):
-            #self.show_error("Chain XP must be a number.")
-        pass
+        self.validate_all()
 
     def on_save_clicked(self):
-        """
-        Stub for later:
-        - Read values
-        - Validate (controller/model)
-        - Save (service)
-        - Reload history + graphs
-        """
-        # entry = self.build_entry_from_ui()
-        # if not entry_valid: show error and return
-        # self.storage.append(entry)
-        # self.refresh_history()
+        current_aspect = self.window.aspect_combo.currentText()
+        current_aspect_level = int(self.window.aspect_level_combo.currentText())
+
+        current_aspect_xp = int(self.window.aspect_xp_input.text())
+        current_chain_level = int(self.window.chain_combo.currentText())
+        current_chain_xp = int(self.window.chain_xp_input.text())
+
+        current_time_stamp = datetime.now().isoformat(timespec="seconds")
+
+        entry = {
+            "timestamp": current_time_stamp,
+            "aspect": current_aspect,
+            "aspect_level": current_aspect_level,
+            "aspect_xp": current_aspect_xp,
+            "chain_level": current_chain_level,
+            "chain_xp": current_chain_xp,
+        }
+        self.storage.append_record(entry)
+        self.refresh_history()
         # self.refresh_graphs()
-        pass
+
     #endregion
 
     # ---------------------------
@@ -117,10 +141,38 @@ class MainController:
 
     def refresh_history(self):
         """
-        Later: load JSON and render into history_table.
-        For now: do nothing.
+        Load JSON and render into history_table.
         """
-        pass
+        records = list(reversed(self.storage.load_history()))
+
+        table = self.window.history_table
+        table.setRowCount(0)
+
+        if not records:
+            return
+
+        table.setRowCount(len(records))
+        table.setColumnCount(6)
+
+        for row, record in enumerate(records):
+            ts_raw = record.get("timestamp", "")
+            try:
+                ts_display = datetime.fromisoformat(ts_raw).strftime("%B %d, %Y")
+            except ValueError:
+                ts_display = ts_raw
+
+            values = [
+                ts_display,
+                record.get("aspect", ""),
+                str(record.get("aspect_level", "")),
+                str(record.get("aspect_xp", "")),
+                str(record.get("chain_level", "")),
+                str(record.get("chain_xp", "")),
+            ]
+
+            for col, value in enumerate(values):
+                item = QTableWidgetItem(value)
+                table.setItem(row, col, item)
 
     def refresh_graphs(self):
         """
@@ -142,10 +194,32 @@ class MainController:
             combo.addItem(str(item))
         combo.blockSignals(False)
 
-    def is_number(self, text):
-        # TODO - Implement input validation
-        return True #if text.isdigit() else False
+    def validate_all(self):
+        # ---- Drop-down validity (placeholders are index 0) ----
+        aspect_ok = self.window.aspect_combo.currentIndex() > 0
+        level_ok = self.window.aspect_level_combo.currentIndex() > 0
+        chain_ok = self.window.chain_combo.currentIndex() > 0
 
-    def show_error(self, message, title = "Invalid Input"):
-        # TODO - Upgrade this to inline field highlighting.
-        QMessageBox.warning(self.window, title, message)
+        # ---- XP fields validity ----
+        # Acceptable input = passes validator; also require non-empty
+        axp_text = self.window.aspect_xp_input.text().strip()
+        cxp_text = self.window.chain_xp_input.text().strip()
+
+        aspect_xp_ok = bool(axp_text) and self.window.aspect_xp_input.hasAcceptableInput()
+        chain_xp_ok = bool(cxp_text) and self.window.chain_xp_input.hasAcceptableInput()
+
+        # ---- Apply inline highlight (valid property -> stylesheet) ----
+        self._set_valid(self.window.aspect_combo, aspect_ok)
+        self._set_valid(self.window.aspect_level_combo, level_ok)
+        self._set_valid(self.window.chain_combo, chain_ok)
+
+        self._set_valid(self.window.aspect_xp_input, aspect_xp_ok)
+        self._set_valid(self.window.chain_xp_input, chain_xp_ok)
+
+        # ---- Save enabled only if everything is valid ----
+        all_ok = aspect_ok and level_ok and chain_ok and aspect_xp_ok and chain_xp_ok
+        self.window.save_button.setEnabled(all_ok)
+    def _set_valid(self, widget, is_valid: bool):
+        widget.setProperty("valid", "true" if is_valid else "false")
+        widget.style().unpolish(widget)  # force stylesheet refresh
+        widget.style().polish(widget)

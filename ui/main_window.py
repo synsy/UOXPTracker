@@ -2,7 +2,7 @@
 
 import sys
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import (QFont, QIntValidator,)
 from PyQt5.QtWidgets import (
     QApplication,
     QComboBox,
@@ -46,6 +46,9 @@ class MainWindow(QMainWindow):
 
         self.aspect_xp_input = QLineEdit()
         self.aspect_xp_input.setPlaceholderText("Enter XP")
+        # Input validation
+        xp_validator_aspect = QIntValidator(0, 250_000, self)
+        self.aspect_xp_input.setValidator(xp_validator_aspect)
 
         # Right (Chain)
         self.chain_combo = QComboBox()
@@ -53,6 +56,9 @@ class MainWindow(QMainWindow):
 
         self.chain_xp_input = QLineEdit()
         self.chain_xp_input.setPlaceholderText("Enter XP")
+        # Input validation
+        xp_validator_chain = QIntValidator(0, 7_500_000, self)
+        self.chain_xp_input.setValidator(xp_validator_chain)
 
         # ---- Top controls row (2 columns) ----
         controls_row = QHBoxLayout()
@@ -262,6 +268,16 @@ class MainWindow(QMainWindow):
                 color: #e6e9ef;
                 selection-background-color: #2b6de8; /* accent */
                 selection-color: #ffffff;
+            }
+            /* Inline validation states */
+            QLineEdit[valid="false"] {
+                border: 1px solid #e06c75;          /* soft red */
+                background: #1a1012;                /* subtle tinted background */
+            }
+            
+            QComboBox[valid="false"] {
+                border: 1px solid #e06c75;
+                background: #1a1012;
             }
 
             QComboBox::drop-down {
