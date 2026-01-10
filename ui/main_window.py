@@ -19,7 +19,7 @@ from PyQt5.QtWidgets import (
     QWidget,
     QPushButton,
 )
-
+from ui.widgets.mpl_graph import MplGraph
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -80,11 +80,24 @@ class MainWindow(QMainWindow):
         graphs_row = QHBoxLayout()
         graphs_row.setSpacing(18)
 
-        self.graph1_panel = self._placeholder_panel("Graph 1")
-        self.graph2_panel = self._placeholder_panel("Graph 2")
+        self.graph1_panel = self._panel_frame()
+        self.graph2_panel = self._panel_frame()
+
+        self.aspect_xp_graph = MplGraph(self.graph1_panel)
+        self.aspect_level_graph = MplGraph(self.graph2_panel)
+
+        # Put canvases inside the frames
+        g1_layout = QVBoxLayout(self.graph1_panel)
+        g1_layout.setContentsMargins(12, 12, 12, 12)
+        g1_layout.addWidget(self.aspect_xp_graph)
+
+        g2_layout = QVBoxLayout(self.graph2_panel)
+        g2_layout.setContentsMargins(12, 12, 12, 12)
+        g2_layout.addWidget(self.aspect_level_graph)
 
         graphs_row.addWidget(self.graph1_panel, 1)
         graphs_row.addWidget(self.graph2_panel, 1)
+
         root.addLayout(graphs_row, 1)
 
         # ---- History panel (bottom, full width) ----
@@ -101,6 +114,7 @@ class MainWindow(QMainWindow):
         self.history_table.setSelectionBehavior(self.history_table.SelectRows)
         self.history_table.setEditTriggers(self.history_table.NoEditTriggers)
         self.history_table.verticalHeader().setVisible(False)
+        #self.history_table.setSortingEnabled(True)
         header = self.history_table.horizontalHeader()
         header.setSectionResizeMode(header.Stretch)
 
@@ -206,6 +220,14 @@ class MainWindow(QMainWindow):
         lay.addWidget(title)
         lay.addStretch(1)
 
+        return frame
+
+    def _panel_frame(self):
+        frame = QFrame()
+        frame.setObjectName("panelFrame")
+        frame.setFrameShape(QFrame.StyledPanel)
+        frame.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        frame.setMinimumHeight(320)
         return frame
 
     def _apply_styles(self):
@@ -388,7 +410,7 @@ class MainWindow(QMainWindow):
         )
 
 
-# Optional: run this file directly to preview just the UI.
+# Testing purposes: run this file directly to preview just the UI.
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     w = MainWindow()
