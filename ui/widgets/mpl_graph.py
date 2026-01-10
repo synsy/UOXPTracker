@@ -42,7 +42,7 @@ class MplGraph(FigureCanvas):
                 fontsize=12,
                 fontweight="600"
             )
-            self.ax.set_title(title)
+            self.ax.set_title(title, color="#e6e9ef", fontsize=13, fontweight="600")
             self.ax.set_ylabel(ylabel)
             self.draw()
             return

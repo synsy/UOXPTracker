@@ -363,7 +363,7 @@ class MainWindow(QMainWindow):
                 background: #151922;
                 gridline-color: #232834;
                 color: #e6e9ef;
-                selection-background-color: #203a72; /* subtle selection */
+                selection-background-color: #203a72;
                 selection-color: #ffffff;
             }
 
@@ -386,7 +386,7 @@ class MainWindow(QMainWindow):
                 color: #ffffff;
             }
 
-            /* --- Scrollbars (subtle, pro) --- */
+            /* --- Scrollbars --- */
             QScrollBar:vertical {
                 background: transparent;
                 width: 10px;
