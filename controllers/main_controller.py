@@ -1,8 +1,10 @@
-from PyQt5.QtWidgets import QMessageBox, QTableWidgetItem
+from PyQt5.QtWidgets import QMessageBox, QTableWidgetItem, QToolButton
 from datetime import datetime
 from services.storage_service import StorageService, StorageConfig
 from pathlib import Path
-import json
+from PyQt5.QtWidgets import QPushButton
+from PyQt5.QtCore import Qt
+
 
 class MainController:
     """
@@ -45,7 +47,7 @@ class MainController:
         Variables
         """
         aspect_choices = ["Air", "Arcane", "Artisan", "Blood", "Command", "Death", "Discipline", "Earth", "Eldritch",
-                          "Fire", "Fortune", "Frost", "Gadget", "Harvest", "Holy", "Lightning", "Lyric", "Death",
+                          "Fire", "Fortune", "Frost", "Gadget", "Harvest", "Holy", "Lightning", "Lyric",
                           "Madness", "Poison", "Shadow", "Void", "War", "Water"]
         aspect_levels = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
 
@@ -145,19 +147,16 @@ class MainController:
     # ---------------------------
 
     def refresh_history(self):
-        """
-        Load JSON and render into history_table.
-        """
         records = list(reversed(self.storage.load_history()))
-
         table = self.window.history_table
+
         table.setRowCount(0)
+        table.setColumnCount(7)  # keep consistent even if empty
 
         if not records:
             return
 
         table.setRowCount(len(records))
-        table.setColumnCount(6)
 
         for row, record in enumerate(records):
             ts_raw = record.get("timestamp", "")
@@ -175,9 +174,21 @@ class MainController:
                 str(record.get("chain_xp", "")),
             ]
 
+            # Fill columns 0..5
             for col, value in enumerate(values):
-                item = QTableWidgetItem(value)
-                table.setItem(row, col, item)
+                table.setItem(row, col, QTableWidgetItem(value))
+
+            # Delete button in column 6 (once per row)
+            delete_btn = QToolButton()
+            delete_btn.setText("x")
+            delete_btn.setObjectName("deleteButton")
+            delete_btn.setToolTip("Delete entry")
+            delete_btn.setFixedSize(18, 18)
+            delete_btn.setCursor(Qt.PointingHandCursor)
+            delete_btn.setProperty("timestamp", record.get("timestamp", ""))
+            delete_btn.clicked.connect(lambda _, ts=record["timestamp"]: self.on_delete_row_clicked(ts))
+
+            table.setCellWidget(row, 6, delete_btn)
 
     def refresh_graphs(self):
         records = self.storage.load_history()
@@ -310,3 +321,16 @@ class MainController:
         widget.setProperty("valid", "true" if is_valid else "false")
         widget.style().unpolish(widget)  # force stylesheet refresh
         widget.style().polish(widget)
+
+    def on_delete_row_clicked(self, ts_iso):
+        if not ts_iso:
+            return
+
+        records = self.storage.load_history()
+        new_records = [r for r in records if r.get("timestamp") != ts_iso]
+        self.storage.save_history(new_records)
+
+        self.refresh_history()
+        self.refresh_graphs()
+
+

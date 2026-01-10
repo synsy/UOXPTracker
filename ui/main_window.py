@@ -105,10 +105,11 @@ class MainWindow(QMainWindow):
         history_layout = QVBoxLayout(history_group)
         history_layout.setContentsMargins(14, 14, 14, 14)
 
-        self.history_table = QTableWidget(0, 6)
+        self.history_table = QTableWidget(0, 7)
         self.history_table.setHorizontalHeaderLabels(
-            ["Timestamp", "Aspect", "Aspect Level", "Aspect XP", "Chain Level", "Chain XP"]
+            ["Timestamp", "Aspect", "Aspect Level", "Aspect XP", "Chain Level", "Chain XP", "     "]
         )
+
         self.history_table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.history_table.setAlternatingRowColors(True)
         self.history_table.setSelectionBehavior(self.history_table.SelectRows)
@@ -117,6 +118,8 @@ class MainWindow(QMainWindow):
         #self.history_table.setSortingEnabled(True)
         header = self.history_table.horizontalHeader()
         header.setSectionResizeMode(header.Stretch)
+        header.setSectionResizeMode(6, header.ResizeToContents)
+        self.history_table.setColumnWidth(6, 36)  # or 32
 
         history_layout.addWidget(self.history_table, 1)
         root.addWidget(history_group, 1)
@@ -336,6 +339,23 @@ class MainWindow(QMainWindow):
                 background: #2a2f3a;
                 color: #9aa6b2;
             }
+            
+            QToolButton#deleteButton {
+                background-color: #b83b3b;
+                color: #ffffff;
+                border: none;
+                font-weight: 600;
+                margin-right: 4
+            }
+            
+            QToolButton#deleteButton:hover {
+                background-color: #d64545;
+            }
+            
+            QToolButton#deleteButton:pressed {
+                background-color: #9f2f2f;
+            }
+
 
             /* --- ComboBox dropdown list --- */
             QComboBox QAbstractItemView {
