@@ -383,6 +383,7 @@ class MainWindow(QMainWindow):
                 background: #151922;
                 gridline-color: #232834;
                 color: #e6e9ef;
+                alternate-background-color: #111520;
                 selection-background-color: #203a72;
                 selection-color: #ffffff;
             }
