@@ -17,7 +17,7 @@ from PyQt5.QtWidgets import (
     QTableWidget,
     QVBoxLayout,
     QWidget,
-    QPushButton,
+    QPushButton, QProgressBar,
 )
 from ui.widgets.mpl_graph import MplGraph
 
@@ -97,6 +97,23 @@ class MainWindow(QMainWindow):
 
         graphs_row.addWidget(self.graph1_panel, 1)
         graphs_row.addWidget(self.graph2_panel, 1)
+
+        self.aspect_progress_bar = QProgressBar()
+        self.aspect_progress_bar.setRange(0, 100)
+        self.aspect_progress_bar.setValue(0)
+        self.aspect_progress_bar.setTextVisible(True)
+        self.aspect_progress_bar.setFixedHeight(14)
+        self.aspect_progress_bar.setObjectName("aspectProgress")
+
+        self.chain_progress_bar = QProgressBar()
+        self.chain_progress_bar.setRange(0, 100)
+        self.chain_progress_bar.setValue(0)
+        self.chain_progress_bar.setTextVisible(True)
+        self.chain_progress_bar.setFixedHeight(14)
+        self.chain_progress_bar.setObjectName("chainProgress")
+
+        g1_layout.addWidget(self.aspect_progress_bar)
+        g2_layout.addWidget(self.chain_progress_bar)
 
         root.addLayout(graphs_row, 1)
 
@@ -281,6 +298,20 @@ class MainWindow(QMainWindow):
                 font-size: 14px;
                 font-weight: 600;
                 color: #9aa6b2;
+            }
+            
+            QProgressBar {
+                background: #0f131a;
+                border: 1px solid #2a2f3a;
+                border-radius: 7px;
+                text-align: center;
+                color: #e6e9ef;
+                font-size: 9pt;
+            }
+            
+            QProgressBar::chunk {
+                background-color: #2b6de8;
+                border-radius: 7px;
             }
 
             /* --- Inputs --- */

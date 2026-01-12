@@ -16,12 +16,12 @@ class MainController:
     }
 
     CHAIN_XP_BY_LEVEL = {
-        1: 250000, 2: 500000, 3: 750000, 4: 1000000, 5: 1250000, 6: 1500000,
-        7: 1750000, 8: 2000000, 9: 2250000, 10: 2500000, 11: 2750000, 12: 3000000,
-        13: 3250000, 14: 3500000, 15: 3750000, 16: 4000000, 17: 4250000,
-        18: 4500000, 19: 4750000, 20: 5000000, 21: 5250000, 22: 5500000,
-        23: 5750000, 24: 6000000, 25: 6250000, 26: 6500000, 27: 6750000,
-        28: 7000000, 29: 7250000, 30: 7500000
+        0: 250000, 1: 500000, 2: 750000, 3: 1000000, 4: 1250000, 5: 1500000,
+        6: 1750000, 7: 2000000, 8: 2250000, 9: 2500000, 10: 2750000, 11: 3000000,
+        12: 3250000, 13: 3500000, 14: 3750000, 15: 4000000, 16: 4250000,
+        17: 4500000, 18: 4750000, 19: 5000000, 20: 5250000, 21: 5500000,
+        22: 5750000, 23: 6000000, 24: 6250000, 25: 6500000, 26: 6750000,
+        27: 7000000, 28: 7250000, 29: 7500000
     }
 
     def __init__(self, window):
@@ -317,6 +317,64 @@ class MainController:
         # ---- Save enabled only if everything is valid ----
         all_ok = aspect_ok and level_ok and chain_ok and aspect_xp_ok and chain_xp_ok
         self.window.save_button.setEnabled(all_ok)
+
+        # ---- Progress Bars validity ----
+        self.refresh_progress_bars()
+
+    def refresh_progress_bars(self):
+        records = self.storage.load_history()
+
+        # ---------------- Aspect progress (by selected aspect + selected level) ----------------
+        level_idx = self.window.aspect_level_combo.currentIndex()
+        aspect_idx = self.window.aspect_combo.currentIndex()
+
+        if aspect_idx == 0 or level_idx == 0:
+            self.window.aspect_progress_bar.setValue(0)
+            self.window.aspect_progress_bar.setFormat("0%")
+        else:
+            selected_aspect = self.window.aspect_combo.currentText()
+            selected_level = int(self.window.aspect_level_combo.currentText())
+
+            max_xp = self.ASPECT_XP_BY_LEVEL.get(selected_level, 0)
+
+            # Find latest matching record (scan from end)
+            latest_xp = None
+            for r in reversed(records):
+                if r.get("aspect") == selected_aspect and r.get("aspect_level") == selected_level:
+                    latest_xp = int(r.get("aspect_xp", 0))
+                    break
+
+            if latest_xp is None or max_xp <= 0:
+                self.window.aspect_progress_bar.setValue(0)
+                self.window.aspect_progress_bar.setFormat(f"0 / {max_xp} (0%)" if max_xp else "0%")
+            else:
+                pct = max(0, min(100, int((latest_xp / max_xp) * 100)))
+                self.window.aspect_progress_bar.setValue(pct)
+                self.window.aspect_progress_bar.setFormat(f"{latest_xp} / {max_xp} ({pct}%)")
+
+        # ---------------- Chain progress (by selected chain level) ----------------
+        chain_idx = self.window.chain_combo.currentIndex()
+        if chain_idx == 0:
+            self.window.chain_progress_bar.setValue(0)
+            self.window.chain_progress_bar.setFormat("—")
+        else:
+            selected_chain_level = int(self.window.chain_combo.currentText())
+            max_xp = self.CHAIN_XP_BY_LEVEL.get(selected_chain_level, 0)
+
+            latest_xp = None
+            for r in reversed(records):
+                if r.get("chain_level") == selected_chain_level:
+                    latest_xp = int(r.get("chain_xp", 0))
+                    break
+
+            if latest_xp is None or max_xp <= 0:
+                self.window.chain_progress_bar.setValue(0)
+                self.window.chain_progress_bar.setFormat(f"0 / {max_xp} (0%)" if max_xp else "—")
+            else:
+                pct = max(0, min(100, int((latest_xp / max_xp) * 100)))
+                self.window.chain_progress_bar.setValue(pct)
+                self.window.chain_progress_bar.setFormat(f"{latest_xp} / {max_xp} ({pct}%)")
+
     def _set_valid(self, widget, is_valid: bool):
         widget.setProperty("valid", "true" if is_valid else "false")
         widget.style().unpolish(widget)  # force stylesheet refresh
