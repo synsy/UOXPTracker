@@ -169,9 +169,9 @@ class MainController:
                 ts_display,
                 record.get("aspect", ""),
                 str(record.get("aspect_level", "")),
-                str(record.get("aspect_xp", "")),
+                f"{record['aspect_xp']:,}",
                 str(record.get("chain_level", "")),
-                str(record.get("chain_xp", "")),
+                f"{record['chain_xp']:,}",
             ]
 
             # Fill columns 0..5
@@ -350,7 +350,7 @@ class MainController:
             else:
                 pct = max(0, min(100, int((latest_xp / max_xp) * 100)))
                 self.window.aspect_progress_bar.setValue(pct)
-                self.window.aspect_progress_bar.setFormat(f"{latest_xp} / {max_xp} ({pct}%)")
+                self.window.aspect_progress_bar.setFormat(f"{latest_xp:,} / {max_xp:,} ({pct}%)")
 
         # ---------------- Chain progress (by selected chain level) ----------------
         chain_idx = self.window.chain_combo.currentIndex()

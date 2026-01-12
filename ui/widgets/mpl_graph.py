@@ -136,9 +136,9 @@ class MplGraph(FigureCanvas):
             delta_str = "Δ XP: —"
         else:
             sign = "+" if d_val >= 0 else ""
-            delta_str = f"Δ XP: {sign}{d_val}"
+            delta_str = f"Δ XP: {sign}{d_val:,}"
 
-        text = f"{date_str}\nXP: {y_val}\n{delta_str}"
+        text = f"{date_str}\nXP: {y_val:,}\n{delta_str}"
 
         self._tooltip.xy = (x_val, y_val)
         self._tooltip.set_text(text)
